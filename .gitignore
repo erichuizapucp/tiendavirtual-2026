@@ -1,0 +1,8 @@
+.DS_Store
+.idea/
+target
+*.iws
+*.iml
+*.ipr
+.mvn/
+application.properties
