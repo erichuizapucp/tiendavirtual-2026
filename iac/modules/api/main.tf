@@ -77,7 +77,7 @@ resource "aws_apigatewayv2_integration" "ordenes_integration" {
   payload_format_version = "1.0"
 }
 
-resource "aws_apigatewayv2_integration" "eventbridge_integration" {
+resource "aws_apigatewayv2_integration" "eventbridge_integration_crear_orden" {
   api_id              = aws_apigatewayv2_api.http_api.id
   integration_type    = "AWS_PROXY"
   integration_subtype = "EventBridge-PutEvents"
@@ -88,6 +88,24 @@ resource "aws_apigatewayv2_integration" "eventbridge_integration" {
     DetailType   = "crear-orden"
     Detail       = "$request.body"
     EventBusName = var.event_bus_name
+  }
+
+  payload_format_version = "1.0"
+  timeout_milliseconds   = 10000
+}
+
+resource "aws_apigatewayv2_integration" "eventbridge_integration_actualizar_orden" {
+  api_id              = aws_apigatewayv2_api.http_api.id
+  integration_type    = "AWS_PROXY"
+  integration_subtype = "EventBridge-PutEvents"
+  credentials_arn     = var.rol_lab_arn
+
+  request_parameters = {
+    Source       = "pe.com.tiendavirtual"
+    DetailType   = "actualizar-orden"
+    Detail       = "$request.body"
+    EventBusName = var.event_bus_name
+    Resources    = "$request.path.proxy"
   }
 
   payload_format_version = "1.0"
@@ -111,18 +129,18 @@ resource "aws_apigatewayv2_stage" "default_stage" {
 }
 
 #########################################
-# Routes - Ordenes (EventBridge for POST, PUT)
+# Routes - Ordenes (EventBridge for POST)
 #########################################
 resource "aws_apigatewayv2_route" "ordenes_post" {
   api_id    = aws_apigatewayv2_api.http_api.id
   route_key = "POST ${local.path_base_servicio_normalizado}/ordenes"
-  target    = "integrations/${aws_apigatewayv2_integration.eventbridge_integration.id}"
+  target    = "integrations/${aws_apigatewayv2_integration.eventbridge_integration_crear_orden.id}"
 }
 
 resource "aws_apigatewayv2_route" "ordenes_put" {
   api_id    = aws_apigatewayv2_api.http_api.id
   route_key = "PUT ${local.path_base_servicio_normalizado}/ordenes/{proxy+}"
-  target    = "integrations/${aws_apigatewayv2_integration.eventbridge_integration.id}"
+  target    = "integrations/${aws_apigatewayv2_integration.eventbridge_integration_actualizar_orden.id}"
 }
 
 #########################################
