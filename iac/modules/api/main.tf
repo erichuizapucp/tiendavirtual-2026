@@ -1,3 +1,7 @@
+locals {
+  path_base_servicio_normalizado = length(trim(var.path_base_servicio, "/")) > 0 ? "/${trim(var.path_base_servicio, "/")}" : ""
+}
+
 resource "aws_apigatewayv2_api" "http_api" {
   name          = "tienda-virtual-api"
   protocol_type = "HTTP"
@@ -12,7 +16,7 @@ resource "aws_apigatewayv2_api" "http_api" {
 resource "aws_apigatewayv2_integration" "productos_integration_get_all" {
   api_id                 = aws_apigatewayv2_api.http_api.id
   integration_type       = "HTTP_PROXY"
-  integration_uri        = "http://${var.load_balancer_url}/api/productos"
+  integration_uri        = "http://${var.load_balancer_url}${local.path_base_servicio_normalizado}/productos"
   integration_method     = "ANY"
   payload_format_version = "1.0"
 }
@@ -20,7 +24,7 @@ resource "aws_apigatewayv2_integration" "productos_integration_get_all" {
 resource "aws_apigatewayv2_integration" "productos_integration" {
   api_id                 = aws_apigatewayv2_api.http_api.id
   integration_type       = "HTTP_PROXY"
-  integration_uri        = "http://${var.load_balancer_url}/api/productos/{proxy}"
+  integration_uri        = "http://${var.load_balancer_url}${local.path_base_servicio_normalizado}/productos/{proxy}"
   integration_method     = "ANY"
   payload_format_version = "1.0"
 }
@@ -28,7 +32,7 @@ resource "aws_apigatewayv2_integration" "productos_integration" {
 resource "aws_apigatewayv2_integration" "clientes_integration_get_all" {
   api_id                 = aws_apigatewayv2_api.http_api.id
   integration_type       = "HTTP_PROXY"
-  integration_uri        = "http://${var.load_balancer_url}/api/clientes"
+  integration_uri        = "http://${var.load_balancer_url}${local.path_base_servicio_normalizado}/clientes"
   integration_method     = "ANY"
   payload_format_version = "1.0"
 }
@@ -36,7 +40,7 @@ resource "aws_apigatewayv2_integration" "clientes_integration_get_all" {
 resource "aws_apigatewayv2_integration" "clientes_integration" {
   api_id                 = aws_apigatewayv2_api.http_api.id
   integration_type       = "HTTP_PROXY"
-  integration_uri        = "http://${var.load_balancer_url}/api/clientes/{proxy}"
+  integration_uri        = "http://${var.load_balancer_url}${local.path_base_servicio_normalizado}/clientes/{proxy}"
   integration_method     = "ANY"
   payload_format_version = "1.0"
 }
@@ -44,7 +48,7 @@ resource "aws_apigatewayv2_integration" "clientes_integration" {
 resource "aws_apigatewayv2_integration" "carritos_integration_get_all" {
   api_id                 = aws_apigatewayv2_api.http_api.id
   integration_type       = "HTTP_PROXY"
-  integration_uri        = "http://${var.load_balancer_url}/api/carritos"
+  integration_uri        = "http://${var.load_balancer_url}${local.path_base_servicio_normalizado}/carritos"
   integration_method     = "ANY"
   payload_format_version = "1.0"
 }
@@ -52,7 +56,7 @@ resource "aws_apigatewayv2_integration" "carritos_integration_get_all" {
 resource "aws_apigatewayv2_integration" "carritos_integration" {
   api_id                 = aws_apigatewayv2_api.http_api.id
   integration_type       = "HTTP_PROXY"
-  integration_uri        = "http://${var.load_balancer_url}/api/carritos/{proxy}"
+  integration_uri        = "http://${var.load_balancer_url}${local.path_base_servicio_normalizado}/carritos/{proxy}"
   integration_method     = "ANY"
   payload_format_version = "1.0"
 }
@@ -60,7 +64,7 @@ resource "aws_apigatewayv2_integration" "carritos_integration" {
 resource "aws_apigatewayv2_integration" "ordenes_integration_get_all" {
   api_id                 = aws_apigatewayv2_api.http_api.id
   integration_type       = "HTTP_PROXY"
-  integration_uri        = "http://${var.load_balancer_url}/api/ordenes"
+  integration_uri        = "http://${var.load_balancer_url}${local.path_base_servicio_normalizado}/ordenes"
   integration_method     = "ANY"
   payload_format_version = "1.0"
 }
@@ -68,7 +72,7 @@ resource "aws_apigatewayv2_integration" "ordenes_integration_get_all" {
 resource "aws_apigatewayv2_integration" "ordenes_integration" {
   api_id                 = aws_apigatewayv2_api.http_api.id
   integration_type       = "HTTP_PROXY"
-  integration_uri        = "http://${var.load_balancer_url}/api/ordenes/{proxy}"
+  integration_uri        = "http://${var.load_balancer_url}${local.path_base_servicio_normalizado}/ordenes/{proxy}"
   integration_method     = "ANY"
   payload_format_version = "1.0"
 }
@@ -111,13 +115,13 @@ resource "aws_apigatewayv2_stage" "default_stage" {
 #########################################
 resource "aws_apigatewayv2_route" "ordenes_post" {
   api_id    = aws_apigatewayv2_api.http_api.id
-  route_key = "POST /ordenes"
+  route_key = "POST ${local.path_base_servicio_normalizado}/ordenes"
   target    = "integrations/${aws_apigatewayv2_integration.eventbridge_integration.id}"
 }
 
 resource "aws_apigatewayv2_route" "ordenes_put" {
   api_id    = aws_apigatewayv2_api.http_api.id
-  route_key = "PUT /ordenes/{proxy+}"
+  route_key = "PUT ${local.path_base_servicio_normalizado}/ordenes/{proxy+}"
   target    = "integrations/${aws_apigatewayv2_integration.eventbridge_integration.id}"
 }
 
@@ -126,31 +130,31 @@ resource "aws_apigatewayv2_route" "ordenes_put" {
 #########################################
 resource "aws_apigatewayv2_route" "clientes_get_all" {
   api_id    = aws_apigatewayv2_api.http_api.id
-  route_key = "GET /clientes"
+  route_key = "GET ${local.path_base_servicio_normalizado}/clientes"
   target    = "integrations/${aws_apigatewayv2_integration.clientes_integration_get_all.id}"
 }
 
 resource "aws_apigatewayv2_route" "clientes_get_proxy" {
   api_id    = aws_apigatewayv2_api.http_api.id
-  route_key = "GET /clientes/{proxy+}"
+  route_key = "GET ${local.path_base_servicio_normalizado}/clientes/{proxy+}"
   target    = "integrations/${aws_apigatewayv2_integration.clientes_integration.id}"
 }
 
 resource "aws_apigatewayv2_route" "clientes_post" {
   api_id    = aws_apigatewayv2_api.http_api.id
-  route_key = "POST /clientes"
+  route_key = "POST ${local.path_base_servicio_normalizado}/clientes"
   target    = "integrations/${aws_apigatewayv2_integration.clientes_integration_get_all.id}"
 }
 
 resource "aws_apigatewayv2_route" "clientes_put_proxy" {
   api_id    = aws_apigatewayv2_api.http_api.id
-  route_key = "PUT /clientes/{proxy+}"
+  route_key = "PUT ${local.path_base_servicio_normalizado}/clientes/{proxy+}"
   target    = "integrations/${aws_apigatewayv2_integration.clientes_integration.id}"
 }
 
 resource "aws_apigatewayv2_route" "clientes_delete_proxy" {
   api_id    = aws_apigatewayv2_api.http_api.id
-  route_key = "DELETE /clientes/{proxy+}"
+  route_key = "DELETE ${local.path_base_servicio_normalizado}/clientes/{proxy+}"
   target    = "integrations/${aws_apigatewayv2_integration.clientes_integration.id}"
 }
 
@@ -160,31 +164,31 @@ resource "aws_apigatewayv2_route" "clientes_delete_proxy" {
 
 resource "aws_apigatewayv2_route" "producto_get_all" {
   api_id    = aws_apigatewayv2_api.http_api.id
-  route_key = "GET /productos"
+  route_key = "GET ${local.path_base_servicio_normalizado}/productos"
   target    = "integrations/${aws_apigatewayv2_integration.productos_integration_get_all.id}"
 }
 
 resource "aws_apigatewayv2_route" "producto_get_proxy" {
   api_id    = aws_apigatewayv2_api.http_api.id
-  route_key = "GET /productos/{proxy+}"
+  route_key = "GET ${local.path_base_servicio_normalizado}/productos/{proxy+}"
   target    = "integrations/${aws_apigatewayv2_integration.productos_integration.id}"
 }
 
 resource "aws_apigatewayv2_route" "producto_post" {
   api_id    = aws_apigatewayv2_api.http_api.id
-  route_key = "POST /productos"
+  route_key = "POST ${local.path_base_servicio_normalizado}/productos"
   target    = "integrations/${aws_apigatewayv2_integration.productos_integration_get_all.id}"
 }
 
 resource "aws_apigatewayv2_route" "producto_put_proxy" {
   api_id    = aws_apigatewayv2_api.http_api.id
-  route_key = "PUT /productos/{proxy+}"
+  route_key = "PUT ${local.path_base_servicio_normalizado}/productos/{proxy+}"
   target    = "integrations/${aws_apigatewayv2_integration.productos_integration.id}"
 }
 
 resource "aws_apigatewayv2_route" "producto_delete_proxy" {
   api_id    = aws_apigatewayv2_api.http_api.id
-  route_key = "DELETE /productos/{proxy+}"
+  route_key = "DELETE ${local.path_base_servicio_normalizado}/productos/{proxy+}"
   target    = "integrations/${aws_apigatewayv2_integration.productos_integration.id}"
 }
 
@@ -193,31 +197,31 @@ resource "aws_apigatewayv2_route" "producto_delete_proxy" {
 #########################################
 resource "aws_apigatewayv2_route" "carritos_get_all" {
   api_id    = aws_apigatewayv2_api.http_api.id
-  route_key = "GET /carritos"
+  route_key = "GET ${local.path_base_servicio_normalizado}/carritos"
   target    = "integrations/${aws_apigatewayv2_integration.carritos_integration_get_all.id}"
 }
 
 resource "aws_apigatewayv2_route" "carritos_get_proxy" {
   api_id    = aws_apigatewayv2_api.http_api.id
-  route_key = "GET /carritos/{proxy+}"
+  route_key = "GET ${local.path_base_servicio_normalizado}/carritos/{proxy+}"
   target    = "integrations/${aws_apigatewayv2_integration.carritos_integration.id}"
 }
 
 resource "aws_apigatewayv2_route" "carritos_post" {
   api_id    = aws_apigatewayv2_api.http_api.id
-  route_key = "POST /carritos/{proxy+}"
+  route_key = "POST ${local.path_base_servicio_normalizado}/carritos/{proxy+}"
   target    = "integrations/${aws_apigatewayv2_integration.carritos_integration.id}"
 }
 
 resource "aws_apigatewayv2_route" "carritos_put_proxy" {
   api_id    = aws_apigatewayv2_api.http_api.id
-  route_key = "PUT /carritos/{proxy+}"
+  route_key = "PUT ${local.path_base_servicio_normalizado}/carritos/{proxy+}"
   target    = "integrations/${aws_apigatewayv2_integration.carritos_integration.id}"
 }
 
 resource "aws_apigatewayv2_route" "carritos_delete_proxy" {
   api_id    = aws_apigatewayv2_api.http_api.id
-  route_key = "DELETE /carritos/{proxy+}"
+  route_key = "DELETE ${local.path_base_servicio_normalizado}/carritos/{proxy+}"
   target    = "integrations/${aws_apigatewayv2_integration.carritos_integration.id}"
 }
 
@@ -226,18 +230,18 @@ resource "aws_apigatewayv2_route" "carritos_delete_proxy" {
 #########################################
 resource "aws_apigatewayv2_route" "ordenes_get_all" {
   api_id    = aws_apigatewayv2_api.http_api.id
-  route_key = "GET /ordenes"
+  route_key = "GET ${local.path_base_servicio_normalizado}/ordenes"
   target    = "integrations/${aws_apigatewayv2_integration.ordenes_integration_get_all.id}"
 }
 
 resource "aws_apigatewayv2_route" "ordenes_get_proxy" {
   api_id    = aws_apigatewayv2_api.http_api.id
-  route_key = "GET /ordenes/{proxy+}"
+  route_key = "GET ${local.path_base_servicio_normalizado}/ordenes/{proxy+}"
   target    = "integrations/${aws_apigatewayv2_integration.ordenes_integration.id}"
 }
 
 resource "aws_apigatewayv2_route" "ordenes_delete_proxy" {
   api_id    = aws_apigatewayv2_api.http_api.id
-  route_key = "DELETE /ordenes/{proxy+}"
+  route_key = "DELETE ${local.path_base_servicio_normalizado}/ordenes/{proxy+}"
   target    = "integrations/${aws_apigatewayv2_integration.ordenes_integration.id}"
 }

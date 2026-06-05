@@ -41,8 +41,9 @@ module "events" {
 }
 
 module "api" {
-  source            = "./modules/api"
-  load_balancer_url = module.compute.load_balancer_url
-  rol_lab_arn       = local.rol_lab_arn
-  event_bus_name    = module.events.event_bus_name
+  source             = "./modules/api"
+  load_balancer_url  = module.compute.load_balancer_url
+  rol_lab_arn        = local.rol_lab_arn
+  event_bus_name     = module.events.event_bus_name
+  path_base_servicio = local.path_base_servicio_normalizado
 }

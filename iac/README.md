@@ -36,3 +36,5 @@ En ECS se inyectan estas variables de entorno para Spring Boot:
 - `DB_NAME`
 - `DB_USER`
 - `DB_PASSWORD`
+
+El mismo `path_base_servicio` también se usa para enrutar API Gateway (por ejemplo: `/api/productos`).

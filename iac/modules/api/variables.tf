@@ -18,3 +18,8 @@ variable "event_bus_name" {
   description = "Nombre del bus de eventos donde se publicarán los eventos"
   type        = string
 }
+
+variable "path_base_servicio" {
+  description = "Path base del servicio (acepta api o /api)"
+  type        = string
+}
