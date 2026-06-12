@@ -32,7 +32,12 @@ jobs:
       - name: Preparar application.properties
         run: |
           cp src/main/resources/application.properties.example src/main/resources/application.properties
-        working-directory: backend
+        working-directory: backend-ventas
+
+      - name: Preparar application.properties (logistica)
+        run: |
+          cp src/main/resources/application.properties.example src/main/resources/application.properties
+        working-directory: backend-logistica
 
       - name: Configurar JDK 25
         uses: actions/setup-java@v5
@@ -41,30 +46,43 @@ jobs:
           java-version: '25'
           cache: maven
 
-      - name: Construir Spring Boot app
+      - name: Construir Spring Boot app (ventas)
         run: ./mvnw clean package -DskipTests
-        working-directory: backend
+        working-directory: backend-ventas
 
-      - name: Construir la imagen docker
-        run: docker build -t tienda-virtual .
-        working-directory: backend
+      - name: Construir Spring Boot app (logistica)
+        run: ./mvnw clean package -DskipTests
+        working-directory: backend-logistica
+
+      - name: Construir imagen docker (ventas)
+        run: docker build -t tienda-virtual-ventas .
+        working-directory: backend-ventas
+
+      - name: Construir imagen docker (logistica)
+        run: docker build -t tienda-virtual-logistica .
+        working-directory: backend-logistica
 
       - name: Iniciar Sesión en ECR
         run: |
           aws ecr get-login-password | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
 
-      - name: Crear el reposiorio ECR si no existe
+      - name: Crear repositorio ECR si no existe
         run: |
-          aws ecr describe-repositories --repository-names tienda-virtual || aws ecr create-repository --repository-name tienda-virtual
+          aws ecr describe-repositories --repository-names ${{ vars.NOMBRE_REPO_ECR }} || aws ecr create-repository --repository-name ${{ vars.NOMBRE_REPO_ECR }}
 
-      - name: Push Docker image
+      - name: Push Docker images al repositorio compartido
         run: |
-          docker tag tienda-virtual ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/tienda-virtual
-          docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/tienda-virtual
+          docker tag tienda-virtual-ventas ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${{ vars.NOMBRE_REPO_ECR }}:ventas-latest
+          docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${{ vars.NOMBRE_REPO_ECR }}:ventas-latest
+          docker tag tienda-virtual-logistica ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${{ vars.NOMBRE_REPO_ECR }}:logistica-latest
+          docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${{ vars.NOMBRE_REPO_ECR }}:logistica-latest
 
       - name: Build Lambda Functions
         run: |
           cd serverless/tiendavirtual/packages/funciones/crear-orden
+          npm ci
+          npm run build
+          cd ../merger
           npm ci
           npm run build
 
@@ -72,6 +90,11 @@ jobs:
         uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: 1.10.5
+
+      - name: Instalar cliente MySQL para inicialización RDS
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
 
       - name: Inicializar Terraform
         run: terraform init -backend-config "bucket=${{ vars.BUCKET }}" -backend-config "dynamodb_table=${{ vars.LOCKS }}"
@@ -83,17 +106,13 @@ jobs:
             -var="id_cuenta_aws=${{ vars.AWS_ACCOUNT_ID }}" \
             -var="nombre_rol_iam=${{ vars.NOMBRE_ROL_IAM }}" \
             -var="path_base_servicio=${{ vars.PATH_BASE_SERVICIO }}" \
-            -var="nombre_cluster_ecs=${{ vars.NOMBRE_CLUSTER }}" \
-            -var="familia_tarea_ecs=${{ vars.FAMILIA_TAREA_ECS }}" \
             -var="nombre_repo_ecr=${{ vars.NOMBRE_REPO_ECR }}" \
-            -var="host_base_datos=${{ vars.HOST_BASE_DATOS }}" \
-            -var="nombre_base_datos=${{ vars.NOMBRE_BASE_DATOS }}" \
             -var="usuario_base_datos=${{ vars.USUARIO_BASE_DATOS }}" \
             -var="contrasenha_base_datos=${{ secrets.CONTRASENHA_BASE_DATOS }}" \
-            -var="nombre_servicio_ecs=${{ vars.NOMBRE_SERVICIO }}" \
             -auto-approve
         working-directory: iac
 
-      - name: Forzar nuevo despliegue ECS
+      - name: Forzar nuevo despliegue ECS (ventas y logistica)
         run: |
-          aws ecs update-service --cluster ${{ vars.NOMBRE_CLUSTER }} --service ${{ vars.NOMBRE_SERVICIO }} --force-new-deployment
+          aws ecs update-service --cluster tienda-virtual-cluster --service servicio-ventas --force-new-deployment
+          aws ecs update-service --cluster tienda-virtual-cluster --service servicio-logistica --force-new-deployment
