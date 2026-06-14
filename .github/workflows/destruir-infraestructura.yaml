@@ -29,6 +29,24 @@ jobs:
       - name: Verificar las credenciales
         run: aws sts get-caller-identity
 
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: |
+            serverless/tiendavirtual/packages/funciones/crear-orden/package-lock.json
+            serverless/tiendavirtual/packages/funciones/merger/package-lock.json
+
+      - name: Build Lambda Functions
+        run: |
+          cd serverless/tiendavirtual/packages/funciones/crear-orden
+          npm ci
+          npm run build
+          cd ../merger
+          npm ci
+          npm run build
+
       - name: Instalar Terraform
         uses: hashicorp/setup-terraform@v4
         with:
