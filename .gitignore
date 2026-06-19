@@ -17,3 +17,6 @@ application.properties
 *.log.*
 *.out.*
 *.err.*
+frontend/node_modules
+frontend/.next
+package-lock.json
