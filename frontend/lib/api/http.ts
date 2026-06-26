@@ -4,9 +4,9 @@ const DEFAULT_HEADERS: HeadersInit = {
 };
 
 function getApiBaseUrl(): string {
-  const baseUrl = process.env.NEXT_PUBLIC_URL_BASE_API?.trim();
+  const baseUrl = process.env.NEXT_URL_BASE_API?.trim();
   if (!baseUrl) {
-    throw new Error("Falta NEXT_PUBLIC_URL_BASE_API en el entorno.");
+    throw new Error("Falta NEXT_URL_BASE_API en el entorno.");
   }
   return baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
 }

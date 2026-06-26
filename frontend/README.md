@@ -8,7 +8,7 @@ Primero, configura el entorno:
 cp .env.local.example .env.local.local
 ```
 
-Define `NEXT_PUBLIC_URL_BASE_API` apuntando a tu API Gateway o backend (ejemplo local: `http://localhost:8080`).
+Define `NEXT_URL_BASE_API` apuntando a tu API Gateway o backend (ejemplo local: `http://localhost:8080`).
 
 Luego, ejecuta el servidor de desarrollo:
 
