@@ -1,23 +1,24 @@
 import { Producto } from "@/lib/modelo/producto";
-import {
-  addProducto,
-  listProductos,
-  removeProducto,
-  updateProducto,
-} from "@/lib/mock/store";
+import { apiRequest } from "@/lib/api/http";
 
 export async function getProductos(): Promise<Producto[]> {
-  return listProductos();
+  return apiRequest<Producto[]>("/api/productos");
 }
 
 export async function agregarProducto(producto: Omit<Producto, 'id'>): Promise<Producto> {
-  return addProducto(producto);
+  return apiRequest<Producto>("/api/productos", {
+    method: "POST",
+    body: JSON.stringify(producto),
+  });
 }
 
 export async function actualizarProducto(productoActualizado: Producto): Promise<Producto> {
-  return updateProducto(productoActualizado);
+  return apiRequest<Producto>(`/api/productos/${productoActualizado.id}`, {
+    method: "PUT",
+    body: JSON.stringify(productoActualizado),
+  });
 }
 
 export async function eliminarProducto(id: number): Promise<void> {
-  await removeProducto(id);
+  await apiRequest<void>(`/api/productos/${id}`, { method: "DELETE" });
 }

@@ -7,7 +7,8 @@ import {
   eliminarItemDelCarrito,
   getCarritoPorCliente,
 } from "@/lib/api/carrito";
-import { getClienteById, listProductos } from "@/lib/mock/store";
+import { getClientePorId } from "@/lib/api/clientes";
+import { getProductos } from "@/lib/api/productos";
 import { Carrito } from "@/lib/modelo/carrito";
 import { ItemCarrito } from "@/lib/modelo/itemCarrito";
 
@@ -17,14 +18,14 @@ export async function obtenerOCrearCarritoPorCliente(clienteId: number): Promise
     return existente;
   }
 
-  const cliente = await getClienteById(clienteId);
-  return crearCarrito({
+  const cliente = await getClientePorId(clienteId);
+  return {
     id: 0,
     nombre: `Carrito de ${cliente.nombre}`,
     fecha: new Date(),
     cliente,
     items: [],
-  });
+  };
 }
 
 export async function agregarAlCarritoPorCliente(
@@ -33,7 +34,7 @@ export async function agregarAlCarritoPorCliente(
   cantidad: number,
 ): Promise<Carrito> {
   const carrito = await obtenerOCrearCarritoPorCliente(clienteId);
-  const productos = await listProductos();
+  const productos = await getProductos();
   const producto = productos.find((row) => row.id === productoId);
 
   if (!producto) {
@@ -42,6 +43,20 @@ export async function agregarAlCarritoPorCliente(
 
   const cantidadFinal = Math.max(1, cantidad);
   const existente = carrito.items?.find((item) => item.producto.id === producto.id);
+
+  if (carrito.id === 0) {
+    const nuevoItem: Omit<ItemCarrito, "id"> = {
+      carrito,
+      producto,
+      cantidad: cantidadFinal,
+      subTotal: cantidadFinal * producto.precio,
+    };
+
+    return crearCarrito({
+      ...carrito,
+      items: [{ ...nuevoItem, id: 0 }],
+    });
+  }
 
   if (existente) {
     return actualizarItemCarrito({

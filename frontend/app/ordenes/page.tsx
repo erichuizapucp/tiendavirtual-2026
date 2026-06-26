@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { listarPedidos, listarPedidosPorFecha } from "@/lib/api/ordenes";
+import { listarPedidos, listarPedidosPorFecha, toIsoDateParam } from "@/lib/api/ordenes";
 
 interface OrdenesPageProps {
   searchParams?: Promise<{ fecha?: string }>;
@@ -8,7 +8,13 @@ interface OrdenesPageProps {
 export default async function OrdenesPage({ searchParams }: OrdenesPageProps) {
   const query = (await searchParams) ?? {};
   const fecha = query.fecha;
-  const ordenes = fecha ? await listarPedidosPorFecha(fecha) : await listarPedidos();
+  const fechaIso = fecha ? toIsoDateParam(fecha) : undefined;
+  const ordenes = fechaIso ? await listarPedidosPorFecha(fechaIso) : await listarPedidos();
+  const fechaFormatter = new Intl.DateTimeFormat("es-PE", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
 
   return (
     <section className="space-y-6 rounded-lg bg-white p-6 shadow-md">
@@ -22,7 +28,14 @@ export default async function OrdenesPage({ searchParams }: OrdenesPageProps) {
           <label className="block text-sm font-medium text-gray-700" htmlFor="fecha">
             Fecha
           </label>
-          <input id="fecha" name="fecha" type="date" defaultValue={fecha ?? ""} className="mt-1 rounded-md border p-2" />
+          <input
+            id="fecha"
+            name="fecha"
+            type="date"
+            lang="es-PE"
+            defaultValue={fechaIso ?? ""}
+            className="mt-1 rounded-md border p-2"
+          />
         </div>
         <button type="submit" className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
           Filtrar
@@ -42,7 +55,7 @@ export default async function OrdenesPage({ searchParams }: OrdenesPageProps) {
                 <h3 className="text-lg font-semibold text-gray-800">
                   {orden.numero} (ID {orden.id})
                 </h3>
-                <p className="text-sm text-gray-600">Fecha: {new Date(orden.fecha).toLocaleDateString()}</p>
+                <p className="text-sm text-gray-600">Fecha: {fechaFormatter.format(new Date(orden.fecha))}</p>
               </header>
               <p className="mb-3 text-sm text-gray-700">
                 Cliente: {orden.carrito.cliente.nombre} {orden.carrito.cliente.apellidos}

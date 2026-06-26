@@ -29,7 +29,7 @@ export default function Home() {
       <header className="rounded-lg bg-white p-6 shadow">
         <h2 className="text-3xl font-bold text-gray-800">Tienda Virtual</h2>
         <p className="mt-2 text-gray-600">
-          Esta version usa App Router, Server Components y Server Actions con datos mock.
+          Esta version usa App Router, Server Components y Server Actions conectados al API real.
         </p>
       </header>
 
