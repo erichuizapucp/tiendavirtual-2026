@@ -14,7 +14,7 @@ jobs:
       AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
       AWS_REGION: ${{ vars.AWS_REGION }}
       AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
-      NEXT_PUBLIC_URL_BASE_API: ${{ vars.NEXT_PUBLIC_URL_BASE_API }}
+      VERCEL_PROJECT_NAME: ${{ vars.VERCEL_PROJECT_NAME }}
 
     steps:
       - name: Recuperar el código
@@ -133,6 +133,10 @@ jobs:
 
       - name: Instalar Vercel CLI
         run: npm install -g vercel
+
+      - name: Vincular carpeta frontend a proyecto Vercel existente
+        run: vercel link --project "$VERCEL_PROJECT_NAME" --yes --token ${{ secrets.VERCEL_TOKEN }}
+        working-directory: frontend
 
       - name: Desplegar en Vercel
         run: vercel --token ${{ secrets.VERCEL_TOKEN }} --prod --yes
