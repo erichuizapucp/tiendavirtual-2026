@@ -5,7 +5,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 Primero, configura el entorno:
 
 ```bash
-cp .env.example .env.local
+cp .env.local.example .env.local.local
 ```
 
 Define `NEXT_PUBLIC_URL_BASE_API` apuntando a tu API Gateway o backend (ejemplo local: `http://localhost:8080`).

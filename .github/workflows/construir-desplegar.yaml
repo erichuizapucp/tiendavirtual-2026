@@ -14,6 +14,7 @@ jobs:
       AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
       AWS_REGION: ${{ vars.AWS_REGION }}
       AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
+      NEXT_PUBLIC_URL_BASE_API: ${{ vars.NEXT_PUBLIC_URL_BASE_API }}
 
     steps:
       - name: Recuperar el código

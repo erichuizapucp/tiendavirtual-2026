@@ -18,6 +18,8 @@ export const metadata: Metadata = {
   description: "Aplicación de Tienda Virtual desarollada para el curso de Lenguajes de Programación",
 };
 
+export const dynamic = "force-dynamic";
+
 export default function RootLayout({
   children,
 }: Readonly<{
